@@ -11,17 +11,6 @@ const port = process.env.PORT || 3000
 app.set('port', port)
 app.use(bodyParser.json())
 
-app.post('/submit', (req, res) => {
-  console.log('got here with ' + JSON.stringify(req.body));
-  let queueSvc = az.createQueueService(process.env['storageConnectionString']);
-  queueSvc.messageEncoder = new az.QueueMessageEncoder.TextBase64QueueMessageEncoder;
-  // Send data to the server or update your stores and such.
-  queueSvc.createMessage('frontline', JSON.stringify(req.body.user), function (err) {
-    console.log('message sent');
-    res.send('OK');
-  });
-});
-
 // Import and Set Nuxt.js options
 let config = require('../nuxt.config.js')
 config.dev = !(process.env.NODE_ENV === 'production')
@@ -35,6 +24,17 @@ async function start() {
     const builder = new Builder(nuxt)
     await builder.build()
   }
+
+  app.post('/submit', (req, res) => {
+    console.log('got here with ' + JSON.stringify(req.body));
+    let queueSvc = az.createQueueService(process.env['storageConnectionString']);
+    queueSvc.messageEncoder = new az.QueueMessageEncoder.TextBase64QueueMessageEncoder;
+    // Send data to the server or update your stores and such.
+    queueSvc.createMessage('frontline', JSON.stringify(req.body.user), function (err) {
+      console.log('message sent');
+      res.send('OK');
+    });
+  });
 
   // Give nuxt middleware to express
   app.use(nuxt.render)
